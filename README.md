@@ -59,7 +59,7 @@ nextTick.while(function () { // this function is evaluated on each iteration
 });
 ```
 
-### nextTick.forEach( array, fn(exit) )
+### nextTick.forEach( array, fn(value, index, array, exit) )
 
 ```javascript
 nextTick.forEach([ 1, 2, 3 ], function (value, index, array, exit) {
@@ -67,7 +67,7 @@ nextTick.forEach([ 1, 2, 3 ], function (value, index, array, exit) {
 });
 ```
 
-### nextTick.in( hash, fn(exit) )
+### nextTick.in( hash, fn(value, key, hash, exit) )
 
 ```javascript
 nextTick.in({ foo: 'bar', baz: 'zoo' }, function (value, key, hash, exit) {
