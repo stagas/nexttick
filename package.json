@@ -1,0 +1,12 @@
+{ "name" : "nexttick"
+, "description" : "Common function wrappers for process.nextTick()"
+, "version" : "0.0.1"
+, "homepage" : "https://github.com/stagas/nexttick"
+, "author" : "George Stagas <gstagas@gmail.com> (http://stagas.com/)"
+, "repository" :
+  { "type" : "git"
+  , "url" : "https://github.com/stagas/nexttick.git"
+  }
+, "main": "./nexttick"
+, "engines" : { "node" : ">=0.4.8" }
+}
