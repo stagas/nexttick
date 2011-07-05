@@ -75,7 +75,7 @@ nextTick.in({ foo: 'bar', baz: 'zoo' }, function (value, key, hash, exit) {
 });
 ```
 
-All loop methods accept a callback using a chained ```.then(cb)``` method, that acts like a callback.
+All loop methods accept a callback using a chained ```.then(cb)``` method.
 You may also pass any arguments you want to it using the `exit([arg1, arg2, ...])` function.
 
 ```javascript
