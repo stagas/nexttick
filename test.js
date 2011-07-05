@@ -32,6 +32,17 @@ var nextTick = require('./nexttick')
   })
 }())
 
+// while loop w/ exit
+;(function () {
+  var i = 0
+  nextTick.while(function () { return i < 100 }, function (exit) {
+    ++i
+    if (i === 50) exit()
+  }).then(function () {
+    assert.equal(50, i)
+  })
+}())
+
 // nextTick w/ arguments
 nextTick(function (a, b, c) {
   assert.equal(1, a)
@@ -94,3 +105,19 @@ nextTick(function (a, b, c) {
     assert.deepEqual(hashB, { foo: 'bar', baz: 'zoo' })
   })
 }())
+
+// arguments passing to callback
+nextTick.forEach([ 1, 2, 3 ], function (value, index, array, exit) {
+  exit('whatever', 'works')
+}).then(function (a, b) {
+  assert.equal('whatever', a)
+  assert.equal('works', b)
+})
+
+// error handling
+nextTick.forEach([ 1, 2, 3 ], function (value, index, array, exit) {
+  exit(new Error('Some error'))
+}).then(function (err) {
+  assert.equal('Some error', err.message)
+  assert.throws(function () { throw err }, Error)
+})

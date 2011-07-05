@@ -2,7 +2,7 @@
 // nextTick
 // by stagas
 //
-// process.nextTick() common functions
+// Common functions using process.nextTick()
 //
 
 exports = module.exports = function () {
@@ -16,15 +16,21 @@ exports = module.exports = function () {
 exports.nextTick = exports.tick = module.exports
 
 exports.loop = function (fn, times) {
-  var next = function () {}
-    , chain = { then: function (fn) { next = fn } }
+  var then = function () {}
+    , chain = { then: function (fn) { then = fn } }
+    , args = []
     , exit = false
+    , exitfn = function () {
+      exit = true
+      args = [].slice.call(arguments)
+    }
+
   ;(function loop() {
     process.nextTick(function () {
-      fn(function () { exit = true })
+      fn(exitfn)
       'undefined' !== typeof times
-        ? --times && !exit && loop() || next()
-        : !exit && loop() || next()
+        ? --times && !exit && loop() || then.apply(this, args)
+        : !exit && loop() || then.apply(this, args)
     })
     return true
   }())
@@ -32,13 +38,19 @@ exports.loop = function (fn, times) {
 }
 
 exports.while = function (truth, fn) {
-  var next = function () {}
-    , chain = { then: function (fn) { next = fn } }
+  var then = function () {}
+    , chain = { then: function (fn) { then = fn } }
+    , args = []
     , exit = false
+    , exitfn = function () {
+      exit = true
+      args = [].slice.call(arguments)
+    }
+
   ;(function loop() {
     process.nextTick(function () {
-      fn(function () { exit = true })
-      truth() && !exit && loop() || next()
+      fn(exitfn)
+      truth() && !exit && loop() || then.apply(this, args)
     })
     return true
   }())
@@ -46,15 +58,21 @@ exports.while = function (truth, fn) {
 }
 
 exports.forEach = function (array, fn) {
-  var next = function () {}
-    , chain = { then: function (fn) { next = fn } }
+  var then = function () {}
+    , chain = { then: function (fn) { then = fn } }
+    , args = []
     , exit = false
-    , length = array.length
+    , exitfn = function () {
+      exit = true
+      args = [].slice.call(arguments)
+    }
+    
+  var length = array.length
     , index = 0
   ;(function loop() {
     process.nextTick(function () {
-      fn(array[index], index++, array, function () { exit = true })
-      index < length && !exit && loop() || next()
+      fn(array[index], index++, array, exitfn)
+      index < length && !exit && loop() || then.apply(this, args)
     })
     return true
   }())
@@ -62,16 +80,22 @@ exports.forEach = function (array, fn) {
 }
 
 exports.in = function (hash, fn) {
-  var next = function () {}
-    , chain = { then: function (fn) { next = fn } }
+  var then = function () {}
+    , chain = { then: function (fn) { then = fn } }
+    , args = []
     , exit = false
-    , keys = Object.keys(hash)
+    , exitfn = function () {
+      exit = true
+      args = [].slice.call(arguments)
+    }
+
+  var keys = Object.keys(hash)
     , key
   ;(function loop() {
     process.nextTick(function () {
       key = keys.shift()
-      fn(hash[key], key, hash, function () { exit = true })
-      keys.length && !exit && loop() || next()
+      fn(hash[key], key, hash, exitfn)
+      keys.length && !exit && loop() || then.apply(this, args)
     })
     return true
   }())

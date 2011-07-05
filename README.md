@@ -1,7 +1,7 @@
 nextTick
 ========
 
-Common function wrappers for process.nextTick()
+Common functions using process.nextTick()
 
 Installation
 ------------
@@ -75,7 +75,8 @@ nextTick.in({ foo: 'bar', baz: 'zoo' }, function (value, key, hash, exit) {
 });
 ```
 
-All loop methods accept a callback using a chained ```.then(cb)``` method for when the process finishes like this:
+All loop methods accept a callback using a chained ```.then(cb)``` method, that acts like a callback.
+You may also pass any arguments you want to it using the `exit([arg1, arg2, ...])` function.
 
 ```javascript
 nextTick.forEach([ 1, 2, 3 ], function (value) {
@@ -84,3 +85,14 @@ nextTick.forEach([ 1, 2, 3 ], function (value) {
   console.log('All done');
 });
 ```
+
+### Error handling
+
+Simply pass an `Error` to the `exit()` function:
+
+```javascript
+nextTick.forEach([ 1, 2, 3 ], function (value, index, array, exit) {
+  exit(new Error('Some error'));
+}).then(function (err) {
+  if (err) throw err;
+});
