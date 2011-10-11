@@ -48,7 +48,7 @@ nextTick.loop(function (exit) {
 });
 ```
 
-### nextTick.while( truth, fn(exit) )
+### nextTick.while( truth, fn (exit) )
 
 ```javascript
 var i = 0;
@@ -59,7 +59,7 @@ nextTick.while(function () { // this function is evaluated on each iteration
 });
 ```
 
-### nextTick.forEach( array, fn(value, index, array, exit) )
+### nextTick.forEach( array, fn (value, index, array, exit) )
 
 ```javascript
 nextTick.forEach([ 1, 2, 3 ], function (value, index, array, exit) {
@@ -67,7 +67,15 @@ nextTick.forEach([ 1, 2, 3 ], function (value, index, array, exit) {
 });
 ```
 
-### nextTick.in( hash, fn(value, key, hash, exit) )
+### nextTick.slice( array [, begin [, end]] ).then( fn (sliced) )
+
+```javascript
+nextTick.slice([ 1, 2, 3, 4, 5 ], 2, -1).then(function (sliced) {
+  console.log(sliced); // [ 3, 4 ]
+});
+```
+
+### nextTick.in( hash, fn (value, key, hash, exit) )
 
 ```javascript
 nextTick.in({ foo: 'bar', baz: 'zoo' }, function (value, key, hash, exit) {

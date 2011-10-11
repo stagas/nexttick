@@ -5,99 +5,89 @@
 // Common functions using process.nextTick()
 //
 
+var slice = [].slice
+
 exports = module.exports = function () {
-  var args = [].slice.call(arguments)
+  var args = slice.call(arguments)
     , fn = args.shift()
+    , then = null
   process.nextTick(function () {
     fn.apply(this, args)
+    then && then()
   })
+  return { then: function (fn) { then = fn } }
 }
 
 exports.nextTick = exports.tick = module.exports
 
-exports.loop = function (fn, times) {
+function wrapper (loop) {
+  var context = {}
   var then = function () {}
-    , chain = { then: function (fn) { then = fn } }
-    , args = []
-    , exit = false
-    , exitfn = function () {
-      exit = true
-      args = [].slice.call(arguments)
-    }
-
-  ;(function loop() {
-    process.nextTick(function () {
-      fn(exitfn)
-      'undefined' !== typeof times
-        ? --times && !exit && loop() || then.apply(this, args)
-        : !exit && loop() || then.apply(this, args)
-    })
+  var args = []
+  loop = loop.bind(context)
+  context.then = function () {
+    then.apply(this, args)
+  }
+  context.exit = false
+  context.exitfn = function () {
+    this.exit = true
+    args = slice.call(arguments)
+  }.bind(context)
+  context.loop = function () {
+    process.nextTick(loop)
     return true
-  }())
-  return chain
+  }
+  context.loop()
+  return { then: function (fn) { then = fn } }
+}
+
+exports.loop = function (fn, times) {
+  return wrapper(function () {
+    fn(this.exitfn)
+    'undefined' !== typeof times
+      ? --times && !this.exit && this.loop() || this.then()
+      : !this.exit && this.loop() || this.then()
+  })
 }
 
 exports.while = function (truth, fn) {
-  var then = function () {}
-    , chain = { then: function (fn) { then = fn } }
-    , args = []
-    , exit = false
-    , exitfn = function () {
-      exit = true
-      args = [].slice.call(arguments)
-    }
-
-  ;(function loop() {
-    process.nextTick(function () {
-      fn(exitfn)
-      truth() && !exit && loop() || then.apply(this, args)
-    })
-    return true
-  }())
-  return chain
+  return wrapper(function () {
+    fn(this.exitfn)
+    truth() && !this.exit && this.loop() || this.then()
+  })
 }
 
 exports.forEach = function (array, fn) {
-  var then = function () {}
-    , chain = { then: function (fn) { then = fn } }
-    , args = []
-    , exit = false
-    , exitfn = function () {
-      exit = true
-      args = [].slice.call(arguments)
-    }
-    
   var length = array.length
     , index = 0
-  ;(function loop() {
-    process.nextTick(function () {
-      fn(array[index], index++, array, exitfn)
-      index < length && !exit && loop() || then.apply(this, args)
-    })
-    return true
-  }())
-  return chain
+  return wrapper(function () {
+    fn(array[index], index++, array, this.exitfn)
+    index < length && !this.exit && this.loop() || this.then()
+  })
+}
+
+exports.slice = function (array, begin, end) {
+  var length = array.length
+  begin = 'undefined' === typeof begin ? 0 : begin < 0 ? length + begin : begin
+  begin = begin < 0 ? 0 : begin > length ? length : begin
+  end = 'undefined' === typeof end ? length : end < 0 ? length + end : end
+  end = end < begin ? begin : end > length ? length : end
+  var sliced = []
+  return exports.loop(function (exit) {
+    if (begin < end) {
+      sliced.push(array[begin++])
+    } else {
+      exit(sliced)
+    }
+  })
 }
 
 exports.in = function (hash, fn) {
-  var then = function () {}
-    , chain = { then: function (fn) { then = fn } }
-    , args = []
-    , exit = false
-    , exitfn = function () {
-      exit = true
-      args = [].slice.call(arguments)
-    }
-
   var keys = Object.keys(hash)
     , key
-  ;(function loop() {
-    process.nextTick(function () {
-      key = keys.shift()
-      fn(hash[key], key, hash, exitfn)
-      keys.length && !exit && loop() || then.apply(this, args)
-    })
-    return true
-  }())
-  return chain
+  return wrapper(function () {
+    key = keys.shift()
+    fn(hash[key], key, hash, this.exitfn)
+    keys.length && !this.exit && this.loop() || this.then()
+  })
 }
